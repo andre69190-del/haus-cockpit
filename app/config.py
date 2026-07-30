@@ -48,6 +48,48 @@ FAVORITES = [
     },
 ]
 
+# --- Räume: Prototyp-Etagen auf echte HA-Bereiche gemappt ---------------------
+# Etage -> Raum-Anzeigename -> Liste der HA-Bereichsnamen, die dazugehören.
+# So werden die Räume automatisch mit den echten Geräten dieser Bereiche gefüllt.
+# Andre kann hier Räume/Bereiche ergänzen oder umbenennen.
+FLOORS = ["Erdgeschoss", "Obergeschoss", "Dachgeschoss", "Praxis", "Garten"]
+
+ROOM_MAP = {
+    "Erdgeschoss": {
+        "Eingang": ["Haustür"],
+        "Flur": ["Flur EG", "EG Flur Boden", "Flur"],
+        "Garderobe": ["Garderobe"],
+        "Gäste-WC": ["Gäste WC"],
+        "Küche": ["Küche", "Kuechenfenster"],
+        "Wohnzimmer": ["Wohnzimmer", "Wohnzimmer t"],
+    },
+    "Obergeschoss": {
+        "Flur": ["Flur OG"],
+        "Schlafzimmer": ["Schlafzimmer", "Schlafzimmer 2"],
+        "Oliver": ["Oliver", "Oliver q"],
+        "Leonard": ["Leo", "Leonard"],
+        "Badezimmer": ["Badezimmer"],
+    },
+    "Dachgeschoss": {
+        "Freizeitraum": ["Freizeitraum DG", "Dachgeschoss"],
+    },
+    "Praxis": {
+        "Praxis": ["Praxis", "Praxis Flur"],
+    },
+    "Garten": {
+        "Garten": ["Garten"],
+        "Cube": ["Garten - Cube"],
+        "Einfahrt": ["Garageneinfahrt"],
+        "Garage": ["Garage"],
+        "Hauswand": ["Hauswand"],
+        "Zaun": ["Zaun"],
+        "Pool": ["Pool", "Wasserwand"],
+    },
+}
+
+# Geräte, deren Name diese Wörter enthält, werden ausgeblendet (Hue-„Automation"-Schalter u. Ä.).
+HIDE_NAME_CONTAINS = ["Automation", "buzzerEnable", "Zirkulation"]
+
 # Nur diese HA-Service-Domänen dürfen über die App geschaltet werden.
 # Schützt davor, dass die App mehr kann als beabsichtigt.
 ALLOWED_SERVICE_DOMAINS = {

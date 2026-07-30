@@ -102,6 +102,55 @@ async def dashboard(_=Depends(require_auth)):
     return {"favorites": favs, "persons": persons}
 
 
+@app.get("/api/rooms")
+async def rooms(_=Depends(require_auth)):
+    """Etagen -> Räume -> echte Geräte (aus den gemappten HA-Bereichen)."""
+    try:
+        devices = await ha.get_area_devices()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Home Assistant nicht erreichbar: {e}")
+
+    def hide(name: str) -> bool:
+        n = name or ""
+        return any(w.lower() in n.lower() for w in cfg.HIDE_NAME_CONTAINS)
+
+    # Geräte nach Bereichsnamen gruppieren (Junk raus)
+    by_area: dict[str, list] = {}
+    for d in devices:
+        if hide(d.get("n", "")):
+            continue
+        by_area.setdefault(d["area"], []).append({
+            "entity_id": d["e"],
+            "domain": d["d"],
+            "name": d.get("n") or d["e"],
+            "state": d.get("s"),
+            "current_temperature": d.get("ct"),
+            "position": d.get("pos"),
+        })
+
+    floors = []
+    for floor in cfg.FLOORS:
+        rooms_out = []
+        for room_name, areas in cfg.ROOM_MAP.get(floor, {}).items():
+            devs = []
+            for area in areas:
+                devs.extend(by_area.get(area, []))
+            # doppelte entfernen, nach Name sortieren
+            seen = set()
+            uniq = []
+            for x in sorted(devs, key=lambda z: (z["domain"], (z["name"] or "").lower())):
+                if x["entity_id"] in seen:
+                    continue
+                seen.add(x["entity_id"])
+                uniq.append(x)
+            if uniq:
+                rooms_out.append({"name": room_name, "devices": uniq})
+        if rooms_out:
+            floors.append({"name": floor, "rooms": rooms_out})
+
+    return {"floors": floors}
+
+
 class ServiceIn(BaseModel):
     domain: str
     service: str

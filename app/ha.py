@@ -81,6 +81,27 @@ async def save_automation_config(auto_id: str, config: dict):
         return r.json()
 
 
+_AREA_DEVICES_TEMPLATE = (
+    "{% set ns = namespace(rows=[]) %}"
+    "{% for a in areas() %}{% for e in area_entities(a) %}"
+    "{% set d = e.split('.')[0] %}"
+    "{% if d in ['light','cover','climate','media_player','switch'] %}"
+    "{% set ns.rows = ns.rows + [{'area': area_name(a), 'd': d, 'e': e, "
+    "'n': state_attr(e,'friendly_name'), 's': states(e), "
+    "'ct': state_attr(e,'current_temperature'), 'pos': state_attr(e,'current_position')}] %}"
+    "{% endif %}{% endfor %}{% endfor %}{{ ns.rows | tojson }}"
+)
+
+
+async def get_area_devices():
+    """Alle steuerbaren Geräte mit ihrem HA-Bereich (über die Template-API)."""
+    async with await _client() as c:
+        r = await c.post("/api/template", json={"template": _AREA_DEVICES_TEMPLATE})
+        r.raise_for_status()
+        import json
+        return json.loads(r.text)
+
+
 async def ping():
     """True, wenn HA erreichbar und Token gültig ist."""
     try:
