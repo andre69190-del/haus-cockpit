@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#03a9f4" />
+<title>Haus-Cockpit</title>
+<style>
+  :root{
+    --blue:#03a9f4; --blue-d:#0288d1; --bg:#f4f6f8; --card:#fff;
+    --ink:#1c2530; --muted:#6b7885; --line:#e4e8ec; --ok:#2e7d32; --warn:#e65100; --off:#b0bac3;
+    --radius:16px; --shadow:0 1px 3px rgba(0,0,0,.08),0 6px 18px rgba(0,0,0,.05);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  body{padding:0 0 96px;max-width:640px;margin:0 auto}
+  header{position:sticky;top:0;z-index:10;background:var(--blue);color:#fff;
+    padding:calc(env(safe-area-inset-top) + 14px) 18px 14px;display:flex;align-items:center;
+    justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+  header h1{font-size:19px;margin:0;font-weight:650;letter-spacing:.2px}
+  header .rl{background:rgba(255,255,255,.18);border:0;color:#fff;font-size:14px;
+    padding:8px 12px;border-radius:10px;cursor:pointer}
+  main{padding:16px}
+  .hidden{display:none!important}
+
+  /* Login */
+  .login{margin-top:14vh;text-align:center;padding:0 24px}
+  .login .logo{font-size:52px;margin-bottom:6px}
+  .login h2{margin:0 0 4px;font-size:22px}
+  .login p{color:var(--muted);margin:0 0 22px;font-size:14px}
+  .login input{width:100%;padding:15px 16px;font-size:17px;border:1px solid var(--line);
+    border-radius:12px;background:#fff;margin-bottom:12px}
+  .btn{display:block;width:100%;padding:15px 16px;font-size:17px;font-weight:650;border:0;
+    border-radius:12px;background:var(--blue);color:#fff;cursor:pointer}
+  .btn:active{background:var(--blue-d)}
+  .btn.sec{background:#eef1f4;color:var(--ink)}
+  .err{color:#c62828;font-size:14px;min-height:20px;margin-top:8px}
+
+  /* Sections */
+  .sec-title{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);
+    margin:22px 4px 10px;font-weight:700}
+  .hero{background:linear-gradient(135deg,#03a9f4,#0288d1);color:#fff;border-radius:var(--radius);
+    padding:18px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .hero .t{font-size:17px;font-weight:650}
+  .hero .s{font-size:13px;opacity:.9;margin-top:2px}
+  .hero .acts{display:flex;gap:8px}
+  .hero button{border:0;border-radius:11px;padding:12px 16px;font-size:15px;font-weight:650;cursor:pointer}
+  .hero .on{background:#fff;color:var(--blue-d)}
+  .hero .stop{background:rgba(255,255,255,.22);color:#fff}
+
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px}
+  .card .ic{font-size:26px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+    background:#f0f4f7;border-radius:12px;flex:0 0 auto}
+  .card .grow{flex:1;min-width:0}
+  .card .nm{font-weight:600;font-size:16px}
+  .card .st{font-size:13px;color:var(--muted);margin-top:2px}
+  .card .st.warn{color:var(--warn);font-weight:600}
+  .card .st.ok{color:var(--ok)}
+
+  /* Toggle switch */
+  .sw{position:relative;width:52px;height:31px;flex:0 0 auto}
+  .sw input{opacity:0;width:0;height:0}
+  .sw .sl{position:absolute;inset:0;background:var(--off);border-radius:31px;transition:.2s;cursor:pointer}
+  .sw .sl:before{content:"";position:absolute;height:25px;width:25px;left:3px;top:3px;background:#fff;
+    border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .sw input:checked + .sl{background:var(--blue)}
+  .sw input:checked + .sl:before{transform:translateX(21px)}
+
+  .mini{border:0;border-radius:11px;padding:11px 14px;font-size:14px;font-weight:650;cursor:pointer;
+    background:#eef1f4;color:var(--ink)}
+  .mini.blue{background:var(--blue);color:#fff}
+  .pillrow{display:flex;flex-wrap:wrap;gap:8px}
+  .pill{padding:9px 13px;border-radius:999px;font-size:14px;font-weight:600;background:#eef1f4;color:var(--muted)}
+  .pill.home{background:#e6f4ea;color:var(--ok)}
+  .pill .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;margin-right:7px;vertical-align:middle}
+
+  /* Rules */
+  .rule{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;
+    margin-bottom:10px;display:flex;align-items:center;gap:12px}
+  .rule .grow{flex:1;min-width:0}
+  .rule .nm{font-weight:600;font-size:15px;line-height:1.3}
+  .rule .st{font-size:12px;color:var(--muted);margin-top:2px}
+  .builder{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .builder label{display:block;font-size:13px;color:var(--muted);font-weight:600;margin:0 0 6px}
+  .builder select{width:100%;padding:13px 14px;font-size:16px;border:1px solid var(--line);
+    border-radius:11px;background:#fff;margin-bottom:14px;-webkit-appearance:none;appearance:none}
+  .builder .arrow{text-align:center;color:var(--blue);font-size:20px;margin:-6px 0 8px}
+
+  /* Tab bar */
+  nav.tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);
+    display:flex;max-width:640px;margin:0 auto;padding:6px 0 calc(env(safe-area-inset-bottom) + 6px);z-index:10}
+  nav.tabs button{flex:1;background:none;border:0;padding:8px 0;font-size:12px;color:var(--muted);cursor:pointer}
+  nav.tabs button .i{display:block;font-size:22px;line-height:1}
+  nav.tabs button.active{color:var(--blue);font-weight:700}
+
+  .toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:#1c2530;color:#fff;
+    padding:11px 18px;border-radius:12px;font-size:14px;opacity:0;transition:.25s;z-index:20;
+    max-width:88%;text-align:center}
+  .toast.show{opacity:1}
+  .empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:14px}
+  .spin{text-align:center;padding:40px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="login">
+  <div class="logo">🏠</div>
+  <h2>Haus-Cockpit</h2>
+  <p>Bitte Passwort eingeben</p>
+  <input id="pw" type="password" placeholder="Passwort" autocomplete="current-password" />
+  <button class="btn" onclick="doLogin()">Anmelden</button>
+  <div id="loginErr" class="err"></div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <header>
+    <h1 id="hdr">Zuhause</h1>
+    <button class="rl" onclick="refresh()">↻ Aktualisieren</button>
+  </header>
+
+  <main>
+    <!-- TAB: Zuhause -->
+    <section id="tab-home">
+      <div id="homeBody"><div class="spin">Lädt…</div></div>
+    </section>
+
+    <!-- TAB: Regeln -->
+    <section id="tab-rules" class="hidden">
+      <div class="sec-title">Neue Regel bauen</div>
+      <div class="builder">
+        <label>Wenn…</label>
+        <select id="selTrigger"></select>
+        <div class="arrow">↓</div>
+        <label>dann…</label>
+        <select id="selAction"></select>
+        <button class="btn" onclick="createRule()">Regel erstellen</button>
+        <div id="ruleErr" class="err"></div>
+      </div>
+      <div class="sec-title">Bestehende Regeln</div>
+      <div id="rulesBody"><div class="spin">Lädt…</div></div>
+    </section>
+  </main>
+
+  <nav class="tabs">
+    <button id="nav-home" class="active" onclick="showTab('home')"><span class="i">🏠</span>Zuhause</button>
+    <button id="nav-rules" onclick="showTab('rules')"><span class="i">⚙️</span>Regeln</button>
+  </nav>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+let TOKEN = localStorage.getItem("haus_token") || "";
+
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2200); }
+
+async function api(path, opts={}){
+  opts.headers = Object.assign({"Content-Type":"application/json","X-Auth":TOKEN}, opts.headers||{});
+  const r = await fetch(path, opts);
+  if(r.status===401){ logout(); throw new Error("Nicht angemeldet"); }
+  const j = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(j.error || ("Fehler "+r.status));
+  return j;
+}
+
+/* ---- Auth ---- */
+async function doLogin(){
+  const pw = $("#pw").value;
+  $("#loginErr").textContent="";
+  try{
+    const j = await (await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({password:pw})})).json();
+    if(j.token){ TOKEN=j.token; localStorage.setItem("haus_token",TOKEN); enterApp(); }
+    else $("#loginErr").textContent = j.error || "Falsches Passwort";
+  }catch(e){ $("#loginErr").textContent="Anmeldung fehlgeschlagen"; }
+}
+$("#pw") && $("#pw").addEventListener("keydown",e=>{ if(e.key==="Enter") doLogin(); });
+
+function logout(){ TOKEN=""; localStorage.removeItem("haus_token");
+  $("#app").classList.add("hidden"); $("#login").classList.remove("hidden"); }
+
+function enterApp(){ $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
+  showTab("home"); loadRules(); }
+
+/* ---- Tabs ---- */
+let TAB="home";
+function showTab(t){
+  TAB=t;
+  $("#tab-home").classList.toggle("hidden", t!=="home");
+  $("#tab-rules").classList.toggle("hidden", t!=="rules");
+  $("#nav-home").classList.toggle("active", t==="home");
+  $("#nav-rules").classList.toggle("active", t==="rules");
+  $("#hdr").textContent = t==="home" ? "Zuhause" : "Regeln";
+  if(t==="home") loadHome();
+}
+function refresh(){ if(TAB==="home") loadHome(); else loadRules(); }
+
+/* ---- Dashboard ---- */
+async function loadHome(){
+  try{
+    const d = await api("/api/dashboard");
+    renderHome(d);
+  }catch(e){ $("#homeBody").innerHTML='<div class="empty">'+e.message+'</div>'; }
+}
+
+function renderHome(d){
+  const music = d.favorites.find(f=>f.type==="media");
+  const playing = music && music.state==="playing";
+  let html="";
+
+  // Hero: Schlager-Knopf
+  html += '<div class="hero"><div><div class="t">🎵 Küche</div>'
+    + '<div class="s">'+(playing?"Läuft gerade":(music?stateLabel(music.state):"—"))+'</div></div>'
+    + '<div class="acts">'
+    + '<button class="on" onclick="schlager()">Schlager an</button>'
+    + '<button class="stop" onclick="mediaStop()">Aus</button>'
+    + '</div></div>';
+
+  // Geräte
+  html += '<div class="sec-title">Geräte</div>';
+  d.favorites.forEach(f=>{ if(f.type!=="media") html += cardHTML(f); });
+
+  // Anwesenheit
+  html += '<div class="sec-title">Wer ist zuhause</div><div class="pillrow">';
+  if(!d.persons.length) html += '<span class="empty">Keine Personen gefunden</span>';
+  d.persons.forEach(p=>{
+    html += '<span class="pill'+(p.home?" home":"")+'"><span class="dot"></span>'
+      + p.name+' · '+(p.home?"zuhause":"weg")+'</span>';
+  });
+  html += '</div>';
+
+  $("#homeBody").innerHTML = html;
+}
+
+function stateLabel(s){
+  const m={on:"An",off:"Aus",open:"Offen",closed:"Zu",closing:"Schließt…",opening:"Öffnet…",
+    playing:"Läuft",paused:"Pausiert",idle:"Bereit",unavailable:"Offline",standby:"Standby"};
+  return m[s]||s;
+}
+
+function cardHTML(f){
+  let ic='<div class="ic">'+(f.icon||"•")+'</div>';
+  let ctrl="", st=stateLabel(f.state), stcls="";
+
+  if(f.type==="light" || f.type==="switch"){
+    const on = f.state==="on";
+    ctrl = '<label class="sw"><input type="checkbox" '+(on?"checked":"")
+      +' onchange="toggleEntity(\''+ (f.type==="light"?"light":"switch") +'\',\''+f.entity_id+'\',this.checked)"><span class="sl"></span></label>';
+  } else if(f.type==="cover"){
+    if(f.offline){ st="Offline / nicht erreichbar"; stcls="warn"; }
+    else if(f.problem){ st="Problem gemeldet"; stcls="warn"; }
+    const open = f.state==="open";
+    ctrl = '<button class="mini '+(open?"":"blue")+'" onclick="cover(\''+f.entity_id+'\',\'open\')">Auf</button>'
+         + '<button class="mini '+(open?"blue":"")+'" style="margin-left:6px" onclick="cover(\''+f.entity_id+'\',\'close\')">Zu</button>';
+  }
+  return '<div class="card">'+ic+'<div class="grow"><div class="nm">'+f.label
+    +'</div><div class="st '+stcls+'">'+st+'</div></div>'+ctrl+'</div>';
+}
+
+/* ---- Aktionen ---- */
+async function schlager(){ try{ await api("/api/quick/schlager",{method:"POST"}); toast("Schlager läuft in der Küche 🎵");
+  setTimeout(loadHome,1200);}catch(e){toast(e.message);} }
+async function mediaStop(){ try{ await api("/api/service",{method:"POST",body:JSON.stringify(
+  {domain:"media_player",service:"media_stop",entity_id:"media_player.kuche"})}); toast("Musik gestoppt");
+  setTimeout(loadHome,1000);}catch(e){toast(e.message);} }
+async function toggleEntity(domain,id,on){ try{ await api("/api/service",{method:"POST",body:JSON.stringify(
+  {domain:domain,service:on?"turn_on":"turn_off",entity_id:id})}); toast(on?"Eingeschaltet":"Ausgeschaltet");
+  }catch(e){toast(e.message); loadHome();} }
+async function cover(id,dir){ try{ await api("/api/service",{method:"POST",body:JSON.stringify(
+  {domain:"cover",service:dir==="open"?"open_cover":"close_cover",entity_id:id})});
+  toast(dir==="open"?"Öffne…":"Schließe…"); setTimeout(loadHome,1500);}catch(e){toast(e.message);} }
+
+/* ---- Regeln ---- */
+async function loadRules(){
+  try{
+    const [b,a] = await Promise.all([api("/api/rules/blocks"), api("/api/automations")]);
+    const st=$("#selTrigger"), sa=$("#selAction");
+    st.innerHTML = b.triggers.map(t=>'<option value="'+t.key+'">'+t.label+'</option>').join("");
+    sa.innerHTML = b.actions.map(x=>'<option value="'+x.key+'">'+x.label+'</option>').join("");
+    renderRules(a.automations);
+  }catch(e){ $("#rulesBody").innerHTML='<div class="empty">'+e.message+'</div>'; }
+}
+
+function renderRules(list){
+  if(!list.length){ $("#rulesBody").innerHTML='<div class="empty">Keine Regeln</div>'; return; }
+  $("#rulesBody").innerHTML = list.map(a=>{
+    const on = a.state==="on";
+    const lt = a.last_triggered ? new Date(a.last_triggered).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}) : "noch nie";
+    return '<div class="rule"><div class="grow"><div class="nm">'+esc(a.name)
+      +'</div><div class="st">zuletzt: '+lt+'</div></div>'
+      +'<label class="sw"><input type="checkbox" '+(on?"checked":"")
+      +' onchange="toggleRule(\''+a.entity_id+'\',this.checked)"><span class="sl"></span></label></div>';
+  }).join("");
+}
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+async function toggleRule(id,on){ try{ await api("/api/automations/toggle",{method:"POST",
+  body:JSON.stringify({entity_id:id,enable:on})}); toast(on?"Regel aktiv":"Regel aus");
+  }catch(e){ toast(e.message); loadRules(); } }
+
+async function createRule(){
+  $("#ruleErr").textContent="";
+  try{
+    const j = await api("/api/rules/simple",{method:"POST",body:JSON.stringify(
+      {trigger:$("#selTrigger").value, action:$("#selAction").value})});
+    toast("Regel erstellt: "+j.alias);
+    loadRules();
+  }catch(e){ $("#ruleErr").textContent=e.message; }
+}
+
+/* ---- Start ---- */
+if(TOKEN) enterApp();
+</script>
+</body>
+</html>
