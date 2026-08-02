@@ -172,6 +172,47 @@ async def service(body: ServiceIn, _=Depends(require_auth)):
     return {"ok": True}
 
 
+def _season_zones(states):
+    """HmIP-Klimazonen, die sich zwischen Heizen (auto) und Kühlen (cool) umschalten lassen."""
+    zones = []
+    for s in states:
+        if not s["entity_id"].startswith("climate."):
+            continue
+        modes = s.get("attributes", {}).get("hvac_modes", []) or []
+        if "cool" in modes and "auto" in modes:
+            zones.append(s)
+    return zones
+
+
+@app.get("/api/season")
+async def season_get(_=Depends(require_auth)):
+    try:
+        states = await ha.get_states()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Home Assistant nicht erreichbar: {e}")
+    zones = _season_zones(states)
+    cooling = sum(1 for z in zones if z["state"] == "cool")
+    return {"cool": cooling > 0 and cooling >= len(zones) / 2, "zones": len(zones), "cooling_zones": cooling}
+
+
+class SeasonIn(BaseModel):
+    cool: bool
+
+
+@app.post("/api/season")
+async def season_set(body: SeasonIn, _=Depends(require_auth)):
+    try:
+        states = await ha.get_states()
+        zones = _season_zones(states)
+        mode = "cool" if body.cool else "auto"
+        for z in zones:
+            await ha.call_service("climate", "set_hvac_mode",
+                                  {"entity_id": z["entity_id"], "hvac_mode": mode})
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"HA-Fehler: {e}")
+    return {"ok": True, "cool": body.cool, "zones": len(zones)}
+
+
 @app.post("/api/quick/schlager")
 async def quick_schlager(_=Depends(require_auth)):
     try:
