@@ -87,6 +87,10 @@ ROOM_MAP = {
     },
 }
 
+# Diese Klima-Entitäten NICHT über den Heizen/Kühlen-Umschalter steuern.
+# Sie haben ihre eigene Steuerung (z. B. Pool-Wärmepumpe, Spa-Heizung).
+SEASON_EXCLUDE = ["climate.pool_heat_pump", "climate.unicorn_spa_heater"]
+
 # Geräte, deren Name diese Wörter enthält, werden ausgeblendet (Hue-„Automation"-Schalter u. Ä.).
 HIDE_NAME_CONTAINS = ["Automation", "buzzerEnable", "Zirkulation"]
 

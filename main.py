@@ -173,13 +173,18 @@ async def service(body: ServiceIn, _=Depends(require_auth)):
 
 
 def _season_zones(states):
-    """HmIP-Klimazonen, die sich zwischen Heizen (auto) und Kühlen (cool) umschalten lassen."""
+    """Nur HmIP-Hauszonen (auto=heizen / cool=kühlen). Pool-Wärmepumpe & Co. bleiben außen vor."""
     zones = []
     for s in states:
-        if not s["entity_id"].startswith("climate."):
+        eid = s["entity_id"]
+        if not eid.startswith("climate."):
+            continue
+        if eid in cfg.SEASON_EXCLUDE:
             continue
         modes = s.get("attributes", {}).get("hvac_modes", []) or []
-        if "cool" in modes and "auto" in modes:
+        # HmIP-Raumthermostate haben auto+cool, aber KEIN 'heat'.
+        # Geräte mit 'heat' (Pool/Spa) haben eine eigene Steuerung -> ausschließen.
+        if "cool" in modes and "auto" in modes and "heat" not in modes:
             zones.append(s)
     return zones
 
